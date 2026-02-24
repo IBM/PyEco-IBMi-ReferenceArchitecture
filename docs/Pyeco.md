@@ -1,6 +1,6 @@
-# Rocket Cognitive Environment (RocketCE)
+# Python Ecosystem for Power
 
-RocketCE offers a POWER-optimized software stack for running AI workloads. It has builtin exploitation of the [AI acceleration of the Power chipset](./RocketCE/mma.md). The product aims to minimize the entry barrier for AI by natively using Python packages on Linux LPARs, without any container platform needed. Benefit from over 200 packages optimized for IBM Power and backed by enterprise support from IBM and Rocket.
+Python Ecosystem for Power offers a POWER-optimized software stack for running AI workloads. It has builtin exploitation of the [AI acceleration of the Power chipset](./Pyeco/mma.md). The product aims to minimize the entry barrier for AI by natively using Python packages on Linux LPARs, without any container platform needed. Benefit from over 250 packages optimized for IBM Power and backed by enterprise support from IBM and community.
 
 **Why choose it?**
 
@@ -11,8 +11,8 @@ RocketCE offers a POWER-optimized software stack for running AI workloads. It ha
 
 **Resources**
 
-- [Announcement](https://www.ibm.com/docs/en/announcements/rocketce-aiml-power-support?region=US)
-- [Community forum](https://community.rocketsoftware.com/forums/power?CommunityKey=c7ece6e8-5a29-4a17-a2bc-68b65f89d29f)
+- [Announcement](https://community.ibm.com/community/user/blogs/gerrit-huizenga/2025/09/16/python-for-power-is-here)
+- [Git repo](https://github.com/ppc64le/pyeco)
 
 ## Sizing and configuration
 
@@ -25,7 +25,7 @@ The content below shows the recommended CPU, memory allocation and configuration
 Given NUMA, the optimal configuration for cores would be 12 or 15 core SCMs (E1080), a 24 core DCM (E1050/S1024/L1024) is the second best option, followed by a 20 core DCM (S1022/L1022), and eventually 8 core eSCMs.
 
 |System            |Module                                         |Core per Chip|
-|------------------|-----------------------------------------------|-------------|
+---|
 |E1080             |12 or 15 core SCMs(both perform similarly well)|12 or 15     |
 |E1050/S1024/L1024 |24 core DCMs                                   |12           |
 |S1022/L1022       |20 core DCMs                                   |10           |
@@ -99,113 +99,101 @@ For running demos and POCs, 1 TB of disk space is typically more than sufficient
 
 - Power9, and later, technology-based servers, with or without GPU
 - Red Hat Enterprise Linux 9.0, or later
-- Packages and binaries from the RocketCE channel
+- Packages and binaries from the IBM’s Optimized Wheel Repository
 
 ### Installation Guide
 
-The binaries and packages optimized for IBM Power architecture are available in [RocketCE](https://anaconda.org/rocketce) channel. It is recommended to use Mamba instead of Conda to manage and resolve the packages, as Mamba is typically faster and can significantly reduce installation times, especially in large environments.
+The binaries and packages optimized for IBM Power architecture are available in [IBM’s Optimized Wheel Repository](https://wheels.developerfirst.ibm.com). Here's a comprehensive and streamlined guide to using optimized Python packages on IBM Power systems.
 
-1. Run the commands below to install micromamba  
 
-    ```bash
-    dnf install bzip2 libxcrypt-compat vim -y
-    "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
-    source ${HOME}/.bashrc
-    ```
+#### 1. **Choose a Supported Python Version**
+- Recommended: **Python 3.10, 3.11, or 3.12**
+- Best support: **3.11 and 3.12** (most packages available)
 
-    An environment is a directory that contains a specific collection of Conda/Mamba packages that you have installed. You can use different environments for different projects or tasks. If you change one environment, your other environments are not affected. There is a default environment called `base` that include a Python installation and some core system libraries and dependencies of Conda/Mamba. It's recommended to avoid installing additional packages into the base environment. Additional packages needed for a new project should always be installed into a newly created Conda environment.
 
-    The commands below are used to create new environment, activate or deactivate environments.
+#### 2. **Create a Virtual Environment**
+This isolates dependencies and avoids system conflicts:
+```bash
+python3.12 -m venv venv
+source venv/bin/activate
+```
 
-    ```bash
-    micromamba create -n myenv python=3.10 numpy pandas
-    micromamba activate myenv
-    micromamba deactivate myenv
-    ```
+#### 3. **Install Packages from IBM’s Optimized Wheel Repository**
+Use `--prefer-binary` to prioritize prebuilt Power wheels:
+```bash
+pip install --prefer-binary <package-name> \
+  --extra-index-url=https://wheels.developerfirst.ibm.com/ppc64le/linux-1.0.0
+```
 
-    Please refer to the [Mamba documentation](https://mamba.readthedocs.io/en/latest/index.html) for more details.
+- This pulls from IBM’s Power-optimized wheel repo.
+- Any `noarch` dependencies will still come from PyPI.
 
-2. Configure micromamba to use RocketCE
+#### 4. **Browse Available Packages (Optional)**
+Use `devpi-client` to explore the repository:
+```bash
+pip install devpi-client
+devpi use https://wheels.developerfirst.ibm.com/ppc64le/linux
+devpi list
+```
 
-    ```bash
-    cat > ~/.condarc <<'EOF'
-    # Conda configuration see https://conda.io/projects/conda/en/latest/configuration.html
-    auto_update_conda: false
-    show_channel_urls: true
-    channel_priority: flexible
-    channels:
-    - rocketce
-    - defaults
-    EOF
-    ```
+#### 5. **Set `LD_LIBRARY_PATH` for Native Libraries**
+Some packages (e.g., TensorFlow, PyTorch, OpenBLAS) require shared libraries at runtime.
 
-    > [!WARNING]
-    > Adding Anaconda's defaults channel to above configuration requires an Anaconda license if you use it in a commercial context.
+If you encounter errors like:
+```
+ImportError: libXYZ.so: cannot open shared object file
+```
+Set the path to your native libraries:
+```bash
+export LD_LIBRARY_PATH=/path/to/libs:$LD_LIBRARY_PATH
+```
 
-3. Install packages
+>💡 Use `ldd $(which python)` or `ldd <binary>` to check for missing `.so` files.
 
-    Those Python packages optimized for Power can be installed using micromamba command. Make sure you create a new environment to install these packages when you start a new project.  
-    The command below is an example of how to install Python, PyTorch, and other packages using micromamba.
 
-    ```bash
-    micromamba install --yes python=3.10 pytorch-cpu mamba conda pip
-    ```
+#### 6. **Troubleshooting Tips from the Community**
+- If a package fails to install:
+  ```bash
+  pip install --prefer-binary --no-cache-dir <package-name>
+  ```
+- Ensure you're using the correct Python version.
+- If a package is missing, request it via:
+  - [IBM TechXchange thread](https://community.ibm.com/community/user/discussion/unleash-the-power-of-ai-with-optimized-python-packages-for-ibm-power)
 
-    For packages that are not available in `defaults` and `RocketCE` channels, you can try installing them from `conda-forge` channel.
 
-    ```bash
-    micromamba install --yes 'conda-forge::accelerate'
-    ```
+#### 7. **Best Practices**
+- Always use a virtual environment.
+- Keep tools up to date:
+  ```bash
+  pip install --upgrade pip setuptools
+  ```
+- Use `--prefer-binary` to avoid unnecessary source builds.
 
-    > [!INFO]
-    > the conda-forge channel includes community-build packages; whereas the defaults and rocketce channels provide enterprise-grade builds and support.
 
-    For packages that are not available in any Conda channels, you can choose to use `pip` to install them. But try to minimize using `pip` where possible as to keep your Conda environment clean and well-managed. You can preconfigure pip to use pre-build Python wheels from a repository by Power champion `Marvin Gießing` who precompiled some useful wheels, which speeds up package installations.
+#### 8. **Use JupyterLab**
 
-    - Optional: configure pip with Marvin's repos (recommended for rapid testing):
+JupyterLab is included in the Python Ecosystem for Power and it's the latest web-based interactive development environment for notebooks, code, and data.
 
-    ```bash
-    mkdir ~/.pip && \
-    echo "[global]" >> ~/.pip/pip.conf && \
-    echo "extra-index-url = https://repo.fury.io/mgiessing" >> ~/.pip/pip.conf
-    ```
+- Install JupyterLab
 
-    - Install pre-requisites from conda channels (in this example, these are needed for librosa):
+```bash
+pip install --prefer-binary jupyter \
+  --extra-index-url=https://wheels.developerfirst.ibm.com/ppc64le/linux-1.0.0
+```
 
-    ```bash
-    micromamba install --yes 'conda-forge::msgpack-python' 'conda-forge::soxr-python'
-    ```
+- Start JupyterLab
 
-    - Install packages:
+```bash
+mkdir notebooks
+nohup jupyter lab --notebook-dir=${HOME}/notebooks --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.allow_origin='*' --NotebookApp.token='' --NotebookApp.password='' &
+```
 
-    ```pip install --prefer-binary \
-    "librosa" \
-    "openai-whisper"
-    ```
+- Access JupyterLab using the URL: `http://<server>:8888/lab`
 
-4. Use JupyterLab
+The command used above to start JupyterLab does not specify a user password and uses HTTP for client-server communication. If you want to set a password and configure TLS/SSL for secure access, please refer to [Jupyter documentation](https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#jupyter-public-server).
 
-    JupyterLab is included in the RocketCE and it's the latest web-based interactive development environment for notebooks, code, and data.
-
-    - Install JupyterLab
-
-    ```bash
-    mamba install --yes jupyterlab
-    ```
-
-    - Start JupyterLab
-
-    ```bash
-    mkdir notebooks
-    nohup jupyter lab --notebook-dir=${HOME}/notebooks --ip=0.0.0.0 --no-browser --allow-root --port=8888 --NotebookApp.allow_origin='*' --NotebookApp.token='' --NotebookApp.password='' &
-    ```
-
-    - Access JupyterLab using the URL: `http://<server>:8888/lab`
-
-    The command used above to start JupyterLab does not specify a user password and uses HTTP for client-server communication. If you want to set a password and configure TLS/SSL for secure access, please refer to [Jupyter documentation](https://jupyter-server.readthedocs.io/en/latest/operators/public-server.html#jupyter-public-server).
-
-    > [!WARNING]
-    > If the firewall on the server is running, make sure it's configured to allow connections from client machines to access the port specified in the command above.
+> [!WARNING]
+> If the firewall on the server is running, make sure it's configured to allow connections from client machines to access the port specified in the command above.
 
 ## Sample applications
 
@@ -591,16 +579,16 @@ class IntrusionDataset(Dataset):
 test_dataset = IntrusionDataset(X_test, y_test)
 test_loader = DataLoader(test_dataset, batch_size=64)
 
-# -------------------------------
+#-
 # 3. Load trained model
-# -------------------------------
+#-
 model = SimpleIDSModel(X_test.shape[1])
 model.load_state_dict(torch.load("intrusion_detection_model.pth"))
 model.eval()
 
-# -------------------------------
+#-
 # 4. Evaluate on test set
-# -------------------------------
+#-
 y_preds, y_trues = [], []
 
 with torch.no_grad():
@@ -612,9 +600,9 @@ with torch.no_grad():
         y_preds.extend(preds.numpy())
         y_trues.extend(y_batch.int().numpy())
 
-# -------------------------------
+#-
 # 5. Print Evaluation Metrics
-# -------------------------------
+#-
 print(classification_report(y_trues, y_preds))
 
 # Optional: Confusion Matrix
@@ -810,7 +798,7 @@ print(f"Reconstruction error threshold: {threshold:.6f}")
 # Prediction and evaluation
 y_pred = (reconstruction_errors > threshold).astype(int)
 
-print("\n--- Classification Report ---")
+print("\ Classification Report")
 print(classification_report(y_all, y_pred, target_names=["Normal", "Attack"]))
 
 # Reconstruction visualization
@@ -827,7 +815,7 @@ plt.show()
 
     Reconstruction error threshold: 0.107242
     
-    --- Classification Report ---
+ Classification Report
                   precision    recall  f1-score   support
     
           Normal       0.98      0.85      0.91     67343
@@ -853,7 +841,7 @@ df_test = pd.read_csv("KDDTest+.txt", header=None, names=cols)
 for col in ['feature_1', 'feature_2', 'feature_3']:
     df_test[col] = LabelEncoder().fit_transform(df_test[col])  # ideally reuse encoder from training
 
-# --- Binary labels ---
+# Binary labels
 df_test['label'] = df_test['label'].apply(lambda x: 0 if x == 'normal' else 1)
 
 # Extract features and resuse training scaler
@@ -875,7 +863,7 @@ y_test_pred = (test_errors > threshold).astype(int)
 # Performance evaluation
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
 
-print("\n--- KDDTest+ Evaluation ---")
+print("\ KDDTest+ Evaluation")
 print(classification_report(y_test, y_test_pred, target_names=["Normal", "Attack"]))
 
 cm = confusion_matrix(y_test, y_test_pred)
@@ -900,7 +888,7 @@ plt.show()
 ```
 
     
-    --- KDDTest+ Evaluation ---
+ KDDTest+ Evaluation
                   precision    recall  f1-score   support
     
           Normal       0.83      0.88      0.85      9711
@@ -2205,4 +2193,4 @@ for row in rows:
 
 Much of this documentation is based on the articles below—credit goes to the original authors for their work.  
 [Sizing and configuring an LPAR for AI workloads](https://community.ibm.com/community/user/blogs/sebastian-lehrig/2024/03/26/sizing-for-ai)  
-[Install and use RocketCE in a Linux LPAR](https://community.ibm.com/community/user/blogs/sebastian-lehrig/2024/02/08/rocketce)
+[Python Ecosystem for Power Hints and Tips, Issue Tracking](https://github.com/ppc64le/pyeco)
