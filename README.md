@@ -1,6 +1,6 @@
-# AI Data Science with IBM i Reference Architecture
+# Reference Architecture for leveraging the Python Ecosystem for Power ("PyEco") with IBM i
 
-Here is the documentation of reference architecture for AI Data Science with IBM i.
+This repository provides a comprehensive reference architecture for leveraging the Python Ecosystem for Power (PyEco) with IBM i. It includes detailed documentation, sample applications, and best practices for integrating modern Python-based AI and data science technologies into IBM i environments.
 
 ## Getting Started
 

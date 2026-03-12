@@ -1,10 +1,15 @@
-# AI Data Science with IBM i Reference Architecture
+# Python Ecosystem for Power(PyEco) with IBM i Reference Architecture
 
-The goal of this reference architecture is to present the team’s insights on the projects and products that IBM i customers can use to integrate state-of-the-art AI and data science technologies into their IBM i applications, operations, and more.
+This documentation provides insights, best practices, and practical examples for integrating state-of-the-art AI and data science technologies into IBM i environments using PyEco.
 
-The projects involved in this reference architecture are Python Ecosystem for Power, Manzan, Debezium, and Tyrico, with more to be added later.
+Python Ecosystem for Power (PyEco) is IBM's initiative to bring optimized Python packages and machine learning capabilities to Power systems, including IBM i. PyEco provides:
 
-The techniques in this architecture are what we recommend to help internal and external customers get started based on our experience. Other techniques may be equally good, but these are the ones we know best and have the most experience with.
+- Pre-built, optimized Python wheels specifically compiled for Power architecture
+- High-performance data science and AI libraries
+- Seamless integration with IBM i native capabilities
+- Support for popular frameworks like TensorFlow, PyTorch, scikit-learn, and more
+
+The goal of this reference architecture is to help IBM i customers successfully integrate modern Python-based AI and data science technologies into their applications and operations. The techniques and recommendations presented here are based on our team's hands-on experience and represent proven approaches for getting started with PyEco on IBM i.
 
 > [!NOTE]
 > This is a work in progress and will be receiving more updates in the near future!!
